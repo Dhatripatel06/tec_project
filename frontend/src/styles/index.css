@@ -1,0 +1,74 @@
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans Gujarati', sans-serif;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Hide scrollbars for slick mobile horizontal rails */
+::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Material symbols outlined alignment */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Custom depth shadow elevations matching Stitch design specs */
+.shadow-level-1 {
+  box-shadow: 0 4px 16px -2px rgba(43, 40, 37, 0.05), 0 2px 6px -1px rgba(43, 40, 37, 0.03);
+}
+
+.shadow-level-2 {
+  box-shadow: 0 12px 28px -4px rgba(249, 90, 44, 0.12), 0 4px 10px -2px rgba(43, 40, 37, 0.04);
+}
+
+.shadow-level-3 {
+  box-shadow: 0 24px 48px -8px rgba(20, 19, 18, 0.18);
+}
+
+/* Scrim Gradients */
+.scrim-bottom {
+  background: linear-gradient(180deg, transparent 40%, rgba(20, 19, 18, 0.88) 100%);
+}
+
+/* Micro-animations */
+.spring-press {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.spring-press:active {
+  transform: scale(0.97);
+}
