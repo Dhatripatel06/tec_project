@@ -145,7 +145,7 @@ export function bindEventDetailModalEvents(container) {
 
   if (bookCta) {
     bookCta.addEventListener('click', () => {
-      alert(`🎉 Pass Booking Confirmed for ${event.title}! (Mock Booking Ticket Issued)`);
+      store.showToast(`🎉 Pass Booking Confirmed for ${event.title}! (Mock Ticket Issued)`);
       store.closeEventModal();
     });
   }

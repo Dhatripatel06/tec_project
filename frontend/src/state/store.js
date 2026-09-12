@@ -31,8 +31,9 @@ class StateStore {
     this.userAuthenticated = false;
     this.language = 'en'; // 'en' | 'gu'
     
-    // Events & API state - initialize with complete authentic dataset
+    // Categories & Zones state
     this.events = [...initialEvents];
+    this.zones = ['Waghawadi', 'Nilambag', 'Ghogha Circle', 'Kaliyabid', 'Crescent', 'Subhashnagar'];
     this.categories = [];
     this.feedPage = 1;
     this.hasMoreFeed = true;
@@ -132,6 +133,16 @@ class StateStore {
   }
 
   // State Mutators
+  showToast(message, duration = 4000) {
+    this.statusMessage = message;
+    this.notify();
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      this.statusMessage = '';
+      this.notify();
+    }, duration);
+  }
+
   toggleLanguage() {
     this.language = this.language === 'en' ? 'gu' : 'en';
     this.notify();
@@ -231,19 +242,43 @@ class StateStore {
     this.notify();
   }
 
+  addCustomZone(zoneName) {
+    if (zoneName && typeof zoneName === 'string') {
+      const trimmed = zoneName.trim();
+      if (trimmed && !this.zones.includes(trimmed)) {
+        this.zones.push(trimmed);
+        this.notify();
+      }
+    }
+  }
+
   async addCustomEvent(newEvent) {
-    this.events.unshift(newEvent);
+    if (newEvent.area) {
+      this.addCustomZone(newEvent.area);
+    }
     this.setActiveTab('today');
+    this.statusMessage = '🚀 Event submitted for curation! Our city team will review and publish your listing shortly.';
     this.notify();
 
     try {
-      await fetch(`${API_BASE}/submissions`, {
+      const res = await fetch(`${API_BASE}/submissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEvent),
       });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.meta && Array.isArray(json.meta.zones)) {
+          json.meta.zones.forEach(z => this.addCustomZone(z));
+        }
+      }
     } catch (err) {
       console.warn('Could not submit event to backend:', err);
+    } finally {
+      setTimeout(() => {
+        this.statusMessage = '';
+        this.notify();
+      }, 5000);
     }
   }
 

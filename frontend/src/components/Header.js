@@ -23,22 +23,27 @@ export function renderHeader() {
 
           <!-- City Selector Dropdown -->
           <div class="relative group hidden sm:block">
-            <button class="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface" type="button">
+            <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high transition-all border border-surface-container-high/60 text-on-surface shadow-xs cursor-pointer" type="button">
               <span class="material-symbols-outlined text-primary text-[18px]">location_on</span>
               <span class="font-label-md text-label-md font-bold">${state.selectedCity}</span>
-              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+              <span class="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-hover:rotate-180">expand_more</span>
             </button>
-            <div class="absolute top-full left-0 mt-space-xs w-48 bg-surface-container-lowest rounded-xl shadow-[0_12px_28px_-4px_rgba(43,40,37,0.12)] p-space-xs hidden group-hover:block transition-all z-50">
-              <div class="px-space-sm py-space-xs font-label-sm text-label-sm uppercase text-on-surface-variant">Switch City</div>
-              ${['Bhavnagar', 'Rajkot', 'Ahmedabad', 'Surat'].map(city => `
-                <button 
-                  class="city-option-btn w-full flex items-center justify-between px-space-sm py-space-xs rounded-lg font-label-md text-label-md transition-colors ${state.selectedCity === city ? 'bg-surface-container-low text-primary font-bold' : 'hover:bg-surface-container text-on-surface'}" 
-                  data-city="${city}"
-                >
-                  <span>${city}</span>
-                  ${state.selectedCity === city ? '<span class="material-symbols-outlined text-[16px]">check</span>' : ''}
-                </button>
-              `).join('')}
+
+            <div class="absolute top-[calc(100%+8px)] left-0 w-52 bg-surface-container-lowest rounded-2xl shadow-[0_16px_36px_-6px_rgba(43,40,37,0.18)] border border-surface-container-high p-2 hidden group-hover:block transition-all z-50">
+              <div class="px-3 py-2 font-label-sm text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 border-b border-surface-container-low mb-1">
+                Switch City
+              </div>
+              <div class="space-y-0.5">
+                ${['Bhavnagar', 'Rajkot', 'Ahmedabad', 'Surat'].map(city => `
+                  <button 
+                    class="city-option-btn w-full flex items-center justify-between px-3 py-2 rounded-xl font-label-md text-sm font-medium transition-colors ${state.selectedCity === city ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-surface-container text-on-surface'}" 
+                    data-city="${city}"
+                  >
+                    <span>${city}</span>
+                    ${state.selectedCity === city ? '<span class="material-symbols-outlined text-[18px] text-primary">check</span>' : ''}
+                  </button>
+                `).join('')}
+              </div>
             </div>
           </div>
         </div>

@@ -140,7 +140,7 @@ export function bindOtpLoginModalEvents(container) {
     verifyBtn.addEventListener('click', () => {
       store.setUserAuthenticated(true);
       store.setLoginModalOpen(false);
-      alert('Welcome to Aaje Su? Bhavnagar! Login successful.');
+      store.showToast('Welcome to Aaje Su? Bhavnagar! Login successful.');
     });
   }
 }

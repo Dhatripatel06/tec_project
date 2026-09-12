@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SubmissionItem {
   id: string;
@@ -49,36 +49,120 @@ export default function AdminDashboardPage() {
       image: '',
       isUrgent: false,
     },
-    {
-      id: 'sub-003',
-      title: 'Saurashtra Handloom & Khadi Utsav 2026',
-      titleGujarati: 'સૌરાષ્ટ્ર હસ્તકળા અને ખાદી ઉત્સવ',
-      category: 'Exhibitions & Shopping',
-      date: 'Nov 15–18, 10:00 AM – 9:00 PM',
-      venue: 'Yashwantrai Natyagruh Ground, Bhavnagar',
-      price: 0,
-      organizer: 'Khadi Gramodyog Board',
-      description: 'Over 40 artisanal stalls from Surendranagar, Kutch and Bhavnagar rural clusters.',
-      status: 'NEEDS_REVIEW',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXyNYB_xePgvREtHKMqyDF7LMif_mQsgKIQKXxHwES5TbrFzLf5CXt8YHks-RvEUsM2-QljEojq0CdcJrpl3XIXB4Z7gSrUNc-Hn1wclVtHiSJE1kLquOSARcIUnOmLFXEw31c05zBGBw27Kl1GuINe4FWQsKN2BI0rczRpL1ZmzP213zS_hHn4Xbb4tltoo3PxQgJ-sAJqEGuANtpkYJCx_rvibr3DJTfFQwS5PsH1IGkbBYiOQn-Bg',
-      isUrgent: false,
-    },
   ]);
 
+  const [liveEvents, setLiveEvents] = useState<SubmissionItem[]>([]);
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastSent, setBroadcastSent] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleApprove = (id: string) => {
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    category: 'culture',
+    venue: '',
+    area: 'Waghawadi',
+    price: 0,
+    organizer: 'Bhavnagar City Admin',
+    description: '',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBKairyZcRpTMjpTnJERNAbkEOFO31vdoPIyG22ybkw4IDUq-zHGAP3Wo1G9gz6Lijm4aBj6pCzozc9Jnhbhfhwi4Ccedu8Te3-tT9R0wfkQfrW79PaT6SnCVVr_ZIHjPWTigDYz0_rNQ8fxp_Do3LJJh1jJtpcD1Dd5jFn4fXNiJ2YniNBKOT6b7E1ZHkvumoysermLwE3gDWff6tt0mKseCODxwmfzCklXzAQjFtVOKs8PyuCbhBY1Q',
+  });
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const loadAllData = async () => {
+    try {
+      // Fetch Pending Submissions
+      const subRes = await fetch('/api/submissions');
+      if (subRes.ok) {
+        const json = await subRes.json();
+        if (json && Array.isArray(json.data)) {
+          setSubmissions(json.data);
+        }
+      }
+
+      // Fetch Approved Live Events
+      const feedRes = await fetch('/api/feed?category=all&date=all');
+      if (feedRes.ok) {
+        const json = await feedRes.json();
+        if (json && Array.isArray(json.data)) {
+          setLiveEvents(json.data);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load admin data:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadAllData();
+    const timer = setInterval(loadAllData, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    const itemToApprove = submissions.find(s => s.id === id);
     setSubmissions((prev) => prev.filter((item) => item.id !== id));
+
+    try {
+      const res = await fetch('/api/submissions/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemToApprove || { id }),
+      });
+      if (res.ok) {
+        showToast('✅ Event approved & published live to Bhavnagar feed!');
+        loadAllData();
+      }
+    } catch (err) {
+      console.warn('Failed to approve submission on server:', err);
+    }
   };
 
   const handleReject = (id: string) => {
     setSubmissions((prev) => prev.filter((item) => item.id !== id));
+    showToast('🚫 Submission rejected and removed from queue.');
+  };
+
+  const handleCreateOfficial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/submissions/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newEvent,
+          id: `evt-admin-${Date.now()}`,
+          dateText: 'Just Added by Admin',
+        }),
+      });
+      if (res.ok) {
+        showToast('🎉 Official Event created & pushed live directly!');
+        setIsCreateModalOpen(false);
+        setNewEvent({
+          title: '',
+          category: 'culture',
+          venue: '',
+          area: 'Waghawadi',
+          price: 0,
+          organizer: 'Bhavnagar City Admin',
+          description: '',
+          image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBKairyZcRpTMjpTnJERNAbkEOFO31vdoPIyG22ybkw4IDUq-zHGAP3Wo1G9gz6Lijm4aBj6pCzozc9Jnhbhfhwi4Ccedu8Te3-tT9R0wfkQfrW79PaT6SnCVVr_ZIHjPWTigDYz0_rNQ8fxp_Do3LJJh1jJtpcD1Dd5jFn4fXNiJ2YniNBKOT6b7E1ZHkvumoysermLwE3gDWff6tt0mKseCODxwmfzCklXzAQjFtVOKs8PyuCbhBY1Q',
+        });
+        loadAllData();
+      }
+    } catch (err) {
+      console.warn('Error creating official event:', err);
+    }
   };
 
   const handleBroadcast = () => {
     if (!broadcastMessage.trim()) return;
     setBroadcastSent(true);
+    showToast('📢 Broadcast notification dispatched to 3,420 Bhavnagar citizens!');
     setTimeout(() => {
       setBroadcastSent(false);
       setBroadcastMessage('');
@@ -234,7 +318,7 @@ export default function AdminDashboardPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="font-semibold text-on-surface">Bhavnagar Feed Live — 38 items</span>
             </div>
-            <button className="flex items-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold px-4 py-2 rounded-full transition-colors">
+            <button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-sm cursor-pointer">
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               <span>Create Official Event</span>
             </button>
@@ -265,7 +349,7 @@ export default function AdminDashboardPage() {
               <div className="px-3 py-1 rounded-full bg-surface-container-lowest text-xs font-semibold shadow-sm">
                 Target SLA: &lt; 15 mins
               </div>
-              <button className="px-3 py-1 rounded-full bg-primary text-on-primary text-xs font-bold transition-all shadow-sm">
+              <button onClick={loadAllData} className="px-3 py-1 rounded-full bg-primary text-on-primary text-xs font-bold transition-all shadow-sm hover:opacity-90 cursor-pointer">
                 Refresh Feed
               </button>
             </div>
@@ -367,13 +451,15 @@ export default function AdminDashboardPage() {
                         : 'text-on-surface-variant hover:bg-surface-container-high'
                     }`}
                   >
-                    Approved & Live (38)
+                    Approved & Live ({liveEvents.length})
                   </button>
                 </div>
               </div>
 
-              {/* Submissions List */}
-              {submissions.map((item) => (
+              {/* Submissions / Live List */}
+              {(activeTab === 'review' ? submissions : liveEvents)
+                .filter(item => !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.venue.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((item) => (
                 <div
                   key={item.id}
                   className="p-5 rounded-2xl bg-surface-container-lowest border border-surface-container-high shadow-sm flex flex-col gap-4 relative overflow-hidden"
@@ -586,6 +672,114 @@ export default function AdminDashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Create Official Event Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/60 backdrop-blur-md overflow-y-auto">
+          <div className="relative w-full max-w-xl bg-surface-container-lowest rounded-3xl shadow-2xl p-6 border border-surface-container-high space-y-4 my-auto">
+            <div className="flex items-center justify-between border-b border-surface-container-high pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                  <span className="material-symbols-outlined text-[20px]">add_circle</span>
+                </span>
+                <h2 className="text-lg font-bold text-on-surface">Create Official Bhavnagar Event</h2>
+              </div>
+              <button onClick={() => setIsCreateModalOpen(false)} className="text-on-surface-variant font-bold hover:text-primary">✕</button>
+            </div>
+
+            <form onSubmit={handleCreateOfficial} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-on-surface mb-1">Event Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="e.g. Heritage Walk & Saurashtra Folk Sangeet Evening"
+                  className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-on-surface mb-1">Category</label>
+                  <select
+                    value={newEvent.category}
+                    onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none"
+                  >
+                    <option value="culture">🎭 Culture & Natak</option>
+                    <option value="food">🍜 Food & Popups</option>
+                    <option value="sports">🏏 Sports & Turf</option>
+                    <option value="workshops">🎨 Workshops & Art</option>
+                    <option value="social">🎤 Social & Open Mic</option>
+                    <option value="exhibitions">🛍 Exhibitions</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-on-surface mb-1">Neighborhood Zone</label>
+                  <input
+                    type="text"
+                    value={newEvent.area}
+                    onChange={(e) => setNewEvent({ ...newEvent, area: e.target.value })}
+                    placeholder="Waghawadi / Subhashnagar"
+                    className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-on-surface mb-1">Venue Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newEvent.venue}
+                    onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
+                    placeholder="e.g. Takhteshwar Temple Grounds"
+                    className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-on-surface mb-1">Ticket Price (₹)</label>
+                  <input
+                    type="number"
+                    value={newEvent.price}
+                    onChange={(e) => setNewEvent({ ...newEvent, price: Number(e.target.value) })}
+                    placeholder="0 for Free Entry"
+                    className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-on-surface mb-1">Description & Details</label>
+                <textarea
+                  rows={3}
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  placeholder="Event highlights, entry guidelines..."
+                  className="w-full p-3 rounded-xl bg-surface-container-low border border-surface-container-high focus:outline-none"
+                />
+              </div>
+
+              <button type="submit" className="w-full py-3 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md hover:bg-primary-container transition-all">
+                Publish Official Event Live Now
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[100] bg-slate-900 text-white dark:bg-surface-container-highest dark:text-on-surface px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 border border-slate-700 animate-bounce">
+          <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-semibold">{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

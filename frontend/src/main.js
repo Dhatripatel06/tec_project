@@ -38,9 +38,9 @@ function renderApp() {
       <div class="flex flex-col w-full">
         ${
           store.statusMessage ? `
-            <div class="bg-primary text-on-primary px-space-md py-space-xs text-center font-label-md text-label-md flex items-center justify-center gap-space-xs animate-fadeIn">
-              <span class="material-symbols-outlined text-[18px] animate-spin">sync</span>
-              <span>${store.statusMessage}</span>
+            <div class="fixed bottom-20 md:bottom-6 right-6 z-[100] max-w-md bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-2xl shadow-2xl flex items-center gap-space-sm border border-white/10 transition-all animate-bounce">
+              <span class="material-symbols-outlined text-primary-fixed text-[22px]">check_circle</span>
+              <span class="font-label-md text-label-md font-semibold text-white">${store.statusMessage}</span>
             </div>
           ` : ''
         }
