@@ -92,12 +92,6 @@ export function renderHeader() {
 
         <!-- Right Action CTAs -->
         <div class="flex items-center gap-space-sm shrink-0">
-          <button id="header-lang-btn" class="flex items-center px-space-sm py-space-xs rounded-full bg-surface-container-low hover:bg-surface-container font-label-sm text-label-sm text-on-surface transition-colors cursor-pointer" type="button">
-            <span class="${state.language === 'en' ? 'font-bold text-primary' : 'text-on-surface-variant'}">EN</span>
-            <span class="mx-1 text-outline-variant">/</span>
-            <span class="${state.language === 'gu' ? 'font-bold text-primary' : 'text-on-surface-variant'}">ગુજ</span>
-          </button>
-
           <button 
             id="header-saved-btn"
             class="p-space-xs rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center relative" 
@@ -107,14 +101,7 @@ export function renderHeader() {
             ${savedCount > 0 ? '<span class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface"></span>' : ''}
           </button>
 
-          <button 
-            id="header-add-btn"
-            class="hidden sm:inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-[0_4px_14px_rgba(173,44,0,0.25)] spring-press"
-          >
-            <span class="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>Add Listing</span>
-          </button>
-
+  
           <button 
             id="header-profile-btn" 
             class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm shrink-0 hover:bg-primary-container transition-colors cursor-pointer"
