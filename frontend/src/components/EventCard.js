@@ -5,7 +5,7 @@ export function renderGridCard(event) {
   const isSaved = store.isSaved(event.id);
 
   return `
-    <div class="flex flex-col bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_-2px_rgba(43,40,37,0.06)] hover:shadow-lg transition-all group">
+    <div class="card-details-trigger flex flex-col bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_-2px_rgba(43,40,37,0.06)] hover:shadow-lg transition-all group cursor-pointer" data-event-id="${event.id}">
       <div class="relative h-48 w-full overflow-hidden">
         <img 
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -20,7 +20,7 @@ export function renderGridCard(event) {
         </div>
         <button 
           data-event-id="${event.id}"
-          class="save-toggle-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-on-surface flex items-center justify-center backdrop-blur-sm transition-colors spring-press"
+          class="save-toggle-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-on-surface flex items-center justify-center backdrop-blur-sm transition-colors spring-press z-10"
         >
           <span class="material-symbols-outlined text-[18px] ${isSaved ? 'text-primary filled' : ''}">
             ${isSaved ? 'favorite' : 'favorite_border'}
@@ -62,7 +62,7 @@ export function renderLargeNatakCard(event) {
   const isSaved = store.isSaved(event.id);
 
   return `
-    <div class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0_8px_24px_-4px_rgba(43,40,37,0.08)] group mb-space-md">
+    <div class="card-details-trigger bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0_8px_24px_-4px_rgba(43,40,37,0.08)] group mb-space-md cursor-pointer" data-event-id="${event.id}">
       <div class="grid grid-cols-1 md:grid-cols-12">
         <div class="relative md:col-span-5 h-60 md:h-auto overflow-hidden">
           <img 
@@ -114,7 +114,7 @@ export function renderLargeNatakCard(event) {
             
             <button 
               data-event-id="${event.id}"
-              class="save-toggle-btn w-10 h-10 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors spring-press"
+              class="save-toggle-btn w-10 h-10 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors spring-press z-10"
             >
               <span class="material-symbols-outlined text-[20px] ${isSaved ? 'text-primary filled' : ''}">
                 ${isSaved ? 'favorite' : 'favorite_border'}
@@ -132,7 +132,7 @@ export function renderGuideListCard(event) {
   const isSaved = store.isSaved(event.id);
 
   return `
-    <div class="flex items-center gap-space-md p-space-sm rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm group">
+    <div class="card-details-trigger flex items-center gap-space-md p-space-sm rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm group cursor-pointer" data-event-id="${event.id}">
       <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0">
         <img 
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
@@ -142,7 +142,7 @@ export function renderGuideListCard(event) {
         <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 text-white font-label-sm text-[10px] font-bold">${event.startTime}</span>
       </div>
 
-      <div class="flex-1 min-w-0 pr-2 cursor-pointer card-details-trigger" data-event-id="${event.id}">
+      <div class="flex-1 min-w-0 pr-2">
         <div class="flex items-center gap-2 mb-1">
           <span class="px-2 py-0.5 rounded-full ${event.category === 'food' ? 'bg-amber-100 text-amber-900' : 'bg-purple-100 text-purple-900'} font-label-sm text-[10px] font-bold uppercase">${event.categoryBadge}</span>
           <span class="text-[11px] ${event.price === 0 ? 'text-green-700 font-bold' : 'text-primary font-bold'}">${event.priceText}</span>
@@ -164,7 +164,7 @@ export function renderGuideListCard(event) {
 
       <button 
         data-event-id="${event.id}"
-        class="save-toggle-btn w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface shrink-0 hover:text-primary transition-colors spring-press"
+        class="save-toggle-btn w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface shrink-0 hover:text-primary transition-colors spring-press z-10"
       >
         <span class="material-symbols-outlined text-[18px] ${isSaved ? 'text-primary filled' : ''}">
           ${isSaved ? 'bookmark' : 'bookmark_border'}
@@ -179,7 +179,7 @@ export function renderStarlightNightCard(event) {
   const isSaved = store.isSaved(event.id);
 
   return `
-    <div class="relative rounded-3xl overflow-hidden bg-inverse-surface text-inverse-on-surface shadow-xl p-space-md sm:p-space-lg mb-space-md">
+    <div class="card-details-trigger relative rounded-3xl overflow-hidden bg-inverse-surface text-inverse-on-surface shadow-xl p-space-md sm:p-space-lg mb-space-md cursor-pointer" data-event-id="${event.id}">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
         <div class="space-y-space-xs max-w-md">
           <div class="flex items-center gap-2">
@@ -217,7 +217,7 @@ export function renderStarlightNightCard(event) {
 
           <button 
             data-event-id="${event.id}"
-            class="save-toggle-btn flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-label-md text-label-md transition-all text-center spring-press"
+            class="save-toggle-btn flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-label-md text-label-md transition-all text-center spring-press z-10"
           >
             ${isSaved ? 'Saved' : 'Save'}
           </button>
@@ -270,3 +270,4 @@ export function bindEventCardEvents(container) {
     });
   });
 }
+

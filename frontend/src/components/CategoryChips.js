@@ -2,16 +2,25 @@ import { store } from '../state/store.js';
 
 export function renderCategoryChips() {
   const currentCat = store.selectedCategory;
+  const events = store.events;
+
+  const countFor = (catId) => {
+    if (catId === 'all') return events.length;
+    return events.filter(item => {
+      const itemCat = (item.category || '').toLowerCase();
+      return itemCat === catId || itemCat.includes(catId);
+    }).length;
+  };
 
   const categories = [
-    { id: 'all', label: '✨ All', count: 38 },
-    { id: 'culture', label: '🎭 Culture & Natak', count: 5 },
-    { id: 'food', label: '🍜 Food & Popups', count: 8 },
-    { id: 'sports', label: '🏏 Sports & Turf', count: 6 },
-    { id: 'workshops', label: '🎨 Workshops', count: 4 },
-    { id: 'social', label: '🎤 Social & Music', count: 7 },
-    { id: 'exhibitions', label: '🛍 Exhibitions', count: 3 },
-    { id: 'festivals', label: '🛕 Festivals & Darshan', count: 3 }
+    { id: 'all', label: '✨ All', count: countFor('all') },
+    { id: 'culture', label: '🎭 Culture & Natak', count: countFor('culture') },
+    { id: 'food', label: '🍜 Food & Popups', count: countFor('food') },
+    { id: 'sports', label: '🏏 Sports & Turf', count: countFor('sports') },
+    { id: 'workshops', label: '🎨 Workshops', count: countFor('workshops') },
+    { id: 'social', label: '🎤 Social & Music', count: countFor('social') },
+    { id: 'exhibitions', label: '🛍 Exhibitions', count: countFor('exhibitions') },
+    { id: 'festivals', label: '🛕 Festivals & Darshan', count: countFor('festivals') }
   ];
 
   return `

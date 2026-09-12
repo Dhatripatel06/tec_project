@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { withApi } from '@/lib/api/handler';
 import { ok } from '@/lib/api/response';
 import { corsHeaders, handleCorsOptions } from '@/lib/api/cors';
@@ -324,12 +323,14 @@ export const GET = withApi(async (ctx) => {
   const acIndoor = url.searchParams.get('acIndoor') === 'true';
   const foodOnSite = url.searchParams.get('foodOnSite') === 'true';
 
-  let filtered = SEED_EVENTS.filter((item) => {
+  const filtered = SEED_EVENTS.filter((item) => {
     // Category filter
     if (category !== 'all' && item.category !== category) return false;
 
     // Date filter
-    if (date !== 'today' && item.date !== date && item.date !== 'today') return false;
+    if (date !== 'all' && date !== 'today' && date !== 'tomorrow' && date !== 'weekend' && date !== 'calendar') {
+      if (item.date !== date) return false;
+    }
 
     // Search query filter
     if (query) {

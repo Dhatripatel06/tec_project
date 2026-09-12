@@ -130,7 +130,7 @@ export function renderSubmitListingScreen() {
               type="number" 
               name="price" 
               placeholder="0 for Free Entry"
-              defaultValue="0"
+              value="0"
               class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/40 focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md"
             />
           </div>

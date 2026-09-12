@@ -15,7 +15,7 @@ export function renderFeaturedHero(event) {
       </div>
 
       <!-- Hero Immersive Poster Card -->
-      <div class="group relative rounded-3xl overflow-hidden bg-surface-container shadow-[0_12px_32px_-4px_rgba(173,44,0,0.15)] transition-all">
+      <div class="quick-view-trigger group relative rounded-3xl overflow-hidden bg-surface-container shadow-[0_12px_32px_-4px_rgba(173,44,0,0.15)] transition-all cursor-pointer" data-event-id="${event.id}">
         <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
           <img 
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
@@ -40,7 +40,7 @@ export function renderFeaturedHero(event) {
             <div class="flex items-center gap-2">
               <button 
                 data-event-id="${event.id}"
-                class="save-toggle-btn w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all spring-press"
+                class="save-toggle-btn w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all spring-press z-10"
                 title="Save event"
               >
                 <span class="material-symbols-outlined text-[20px] ${isSaved ? 'text-primary filled' : ''}">
@@ -50,7 +50,7 @@ export function renderFeaturedHero(event) {
               
               <button 
                 data-event-id="${event.id}"
-                class="share-btn w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all spring-press"
+                class="share-btn w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all spring-press z-10"
                 title="Share on WhatsApp"
               >
                 <span class="material-symbols-outlined text-[20px]">share</span>
@@ -103,14 +103,6 @@ export function renderFeaturedHero(event) {
 export function bindFeaturedHeroEvents(container, event) {
   if (!event) return;
 
-  const saveBtn = container.querySelector('.save-toggle-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      store.toggleSaveEvent(event.id);
-    });
-  }
-
   const shareBtn = container.querySelector('.share-btn');
   if (shareBtn) {
     shareBtn.addEventListener('click', (e) => {
@@ -120,11 +112,11 @@ export function bindFeaturedHeroEvents(container, event) {
     });
   }
 
-  const quickViewBtn = container.querySelector('.quick-view-trigger');
-  if (quickViewBtn) {
-    quickViewBtn.addEventListener('click', (e) => {
+  container.querySelectorAll('.quick-view-trigger').forEach(el => {
+    el.addEventListener('click', (e) => {
       e.stopPropagation();
       store.openEventModal(event);
     });
-  }
+  });
 }
+

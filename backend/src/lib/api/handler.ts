@@ -24,17 +24,13 @@ export interface HandlerOptions {
   requireAuth?: boolean;
 }
 
-interface RouteArgs<TParams> {
-  params: Promise<TParams>;
-}
-
 export function withApi<TParams extends Record<string, string> = Record<string, string>>(
   handler: Handler<TParams>,
   options: HandlerOptions = {},
 ) {
   return async (
     request: Request,
-    args?: RouteArgs<TParams>,
+    context?: unknown,
   ): Promise<NextResponse<ApiResponseBody<unknown>>> => {
     try {
       const ctx = await createContext(request);
@@ -57,7 +53,8 @@ export function withApi<TParams extends Record<string, string> = Record<string, 
         }
       }
 
-      const params = args?.params ? await args.params : ({} as TParams);
+      const rawParams = (context as { params?: Promise<TParams> })?.params;
+      const params = rawParams ? await rawParams : ({} as TParams);
       return await handler(ctx, params);
     } catch (error) {
       return toErrorResponse(error);

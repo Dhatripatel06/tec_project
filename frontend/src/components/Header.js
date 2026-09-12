@@ -87,10 +87,10 @@ export function renderHeader() {
 
         <!-- Right Action CTAs -->
         <div class="flex items-center gap-space-sm shrink-0">
-          <button class="flex items-center px-space-sm py-space-xs rounded-full bg-surface-container-low hover:bg-surface-container font-label-sm text-label-sm text-on-surface transition-colors" type="button">
-            <span class="font-bold text-primary">EN</span>
+          <button id="header-lang-btn" class="flex items-center px-space-sm py-space-xs rounded-full bg-surface-container-low hover:bg-surface-container font-label-sm text-label-sm text-on-surface transition-colors cursor-pointer" type="button">
+            <span class="${state.language === 'en' ? 'font-bold text-primary' : 'text-on-surface-variant'}">EN</span>
             <span class="mx-1 text-outline-variant">/</span>
-            <span class="text-on-surface-variant">ગુજ</span>
+            <span class="${state.language === 'gu' ? 'font-bold text-primary' : 'text-on-surface-variant'}">ગુજ</span>
           </button>
 
           <button 
@@ -124,6 +124,12 @@ export function renderHeader() {
 }
 
 export function bindHeaderEvents(container) {
+  // Language toggle button
+  const langBtn = container.querySelector('#header-lang-btn');
+  if (langBtn) {
+    langBtn.addEventListener('click', () => store.toggleLanguage());
+  }
+
   // Navigation tabs
   container.querySelectorAll('.nav-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -164,6 +170,12 @@ export function bindHeaderEvents(container) {
   const addBtn = container.querySelector('#header-add-btn');
   if (addBtn) {
     addBtn.addEventListener('click', () => store.setActiveTab('add-event'));
+  }
+
+  // Clear & Seed DB button
+  const seedBtn = container.querySelector('#header-seed-btn');
+  if (seedBtn) {
+    seedBtn.addEventListener('click', () => store.clearAndSeedData());
   }
 
   // Profile / Login button

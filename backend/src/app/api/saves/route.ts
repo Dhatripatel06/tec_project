@@ -1,5 +1,5 @@
 import { withApi } from '@/lib/api/handler';
-import { ok, created, fail, ERROR_CODES } from '@/lib/api/response';
+import { ok, fail, ERROR_CODES } from '@/lib/api/response';
 import { corsHeaders, handleCorsOptions } from '@/lib/api/cors';
 
 export async function OPTIONS() {

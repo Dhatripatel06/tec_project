@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface SubmissionItem {
   id: string;
@@ -51,7 +51,7 @@ export default function AdminDashboardPage() {
     },
     {
       id: 'sub-003',
-      title: 'Saurashtra Handloom & Khadi Utsav 2025',
+      title: 'Saurashtra Handloom & Khadi Utsav 2026',
       titleGujarati: 'સૌરાષ્ટ્ર હસ્તકળા અને ખાદી ઉત્સવ',
       category: 'Exhibitions & Shopping',
       date: 'Nov 15–18, 10:00 AM – 9:00 PM',
@@ -67,7 +67,6 @@ export default function AdminDashboardPage() {
 
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [broadcastSent, setBroadcastSent] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>(['sub-001']);
 
   const handleApprove = (id: string) => {
     setSubmissions((prev) => prev.filter((item) => item.id !== id));

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface EventItem {
   id: string;
@@ -35,7 +35,7 @@ interface EventItem {
 
 export default function ConsumerHomePage() {
   const [activeTab, setActiveTab] = useState<'today' | 'explore-and-weekend' | 'saved' | 'add-event'>('today');
-  const [selectedCity, setSelectedCity] = useState('Bhavnagar');
+  const [selectedCity] = useState('Bhavnagar');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [savedEventIds, setSavedEventIds] = useState<string[]>(['evt-001', 'evt-004']);
@@ -43,10 +43,9 @@ export default function ConsumerHomePage() {
   // Modals state
   const [activeModalEvent, setActiveModalEvent] = useState<EventItem | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   // Filter state
-  const [filters, setFilters] = useState({
+  const [filters] = useState({
     timeBand: 'all',
     maxPrice: null as number | null,
     maxDistance: 8,
@@ -56,7 +55,7 @@ export default function ConsumerHomePage() {
   });
 
   // Events list
-  const [events, setEvents] = useState<EventItem[]>([
+  const [events] = useState<EventItem[]>([
     {
       id: "evt-001",
       title: "Sur Sangam: Live Acoustic Gujarati Ghazal & Indie Fusion",

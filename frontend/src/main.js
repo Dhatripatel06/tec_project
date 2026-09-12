@@ -15,6 +15,11 @@ function renderApp() {
   const appContainer = document.getElementById('app');
   if (!appContainer) return;
 
+  const activeElem = document.activeElement;
+  const isSearchInput = activeElem && activeElem.id === 'header-search-input';
+  const selStart = isSearchInput ? activeElem.selectionStart : null;
+  const selEnd = isSearchInput ? activeElem.selectionEnd : null;
+
   const activeTab = store.activeTab;
 
   appContainer.innerHTML = `
@@ -31,6 +36,15 @@ function renderApp() {
     <!-- Main Viewport Canvas -->
     <main class="w-full pt-20 bg-background min-h-[calc(100vh-80px)] pb-24 md:pb-0">
       <div class="flex flex-col w-full">
+        ${
+          store.statusMessage ? `
+            <div class="bg-primary text-on-primary px-space-md py-space-xs text-center font-label-md text-label-md flex items-center justify-center gap-space-xs animate-fadeIn">
+              <span class="material-symbols-outlined text-[18px] animate-spin">sync</span>
+              <span>${store.statusMessage}</span>
+            </div>
+          ` : ''
+        }
+
         <!-- Interactive Filter Drawer -->
         <div id="filter-drawer-root">
           ${renderFilterDrawer()}
@@ -108,7 +122,7 @@ function renderApp() {
         </div>
 
         <div class="pt-space-md border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-space-sm">
-          <p class="font-label-sm text-label-sm text-on-surface-variant">© 2025 Aaje Su? Made with Saurashtrian warmth for Bhavnagar, Gujarat.</p>
+          <p class="font-label-sm text-label-sm text-on-surface-variant">© 2026 Aaje Su? Made with Saurashtrian warmth for Bhavnagar, Gujarat.</p>
           <div class="flex items-center gap-space-md font-label-sm text-label-sm text-on-surface-variant">
             <a class="hover:text-on-surface" href="#">Privacy</a>
             <a class="hover:text-on-surface" href="#">Terms</a>
@@ -161,6 +175,17 @@ function renderApp() {
   const footerAddBtn = appContainer.querySelector('#footer-add-event-btn');
   if (footerAddBtn) {
     footerAddBtn.addEventListener('click', () => store.setActiveTab('add-event'));
+  }
+
+  // Restore focus if search input was focused
+  if (isSearchInput) {
+    const searchInput = document.getElementById('header-search-input');
+    if (searchInput) {
+      searchInput.focus();
+      if (selStart !== null && selEnd !== null) {
+        try { searchInput.setSelectionRange(selStart, selEnd); } catch {}
+      }
+    }
   }
 }
 
