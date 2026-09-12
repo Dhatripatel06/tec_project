@@ -19,6 +19,7 @@ import {
   loadMigrations,
   MIGRATIONS_TABLE_SQL,
 } from '../src/lib/db/migrations';
+import { connectionFromEnv, describeConnection } from '../src/lib/db/connection';
 
 config({ path: '.env.local' });
 config({ path: '.env' });
@@ -26,16 +27,6 @@ config({ path: '.env' });
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const withShim = args.has('--with-shim');
-
-/** Redacts credentials so a connection string never reaches the console. */
-function describeTarget(url: string): string {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.hostname}:${parsed.port || '5432'}${parsed.pathname}`;
-  } catch {
-    return '(unparseable connection string)';
-  }
-}
 
 async function looksLikeSupabase(client: Client): Promise<boolean> {
   const { rows } = await client.query<{ present: boolean }>(
@@ -51,26 +42,11 @@ async function looksLikeSupabase(client: Client): Promise<boolean> {
 }
 
 async function main(): Promise<void> {
-  const url = process.env.SUPABASE_DB_URL;
-  if (!url) {
-    console.error(
-      'SUPABASE_DB_URL is not set.\n' +
-        'Copy it from Supabase → Project Settings → Database → Connection string (URI).\n' +
-        'Put it in .env.local, which is git-ignored.',
-    );
-    process.exit(1);
-  }
-
-  const client = new Client({
-    connectionString: url,
-    // Supabase requires TLS; its pooler certificate is not in Node's CA store.
-    ssl: url.includes('localhost') || url.includes('127.0.0.1')
-      ? undefined
-      : { rejectUnauthorized: false },
-  });
+  const conn = connectionFromEnv();
+  const client = new Client(conn);
 
   await client.connect();
-  console.info(`Connected to ${describeTarget(url)}`);
+  console.info(`Connected to ${describeConnection(conn)}`);
 
   const isSupabase = await looksLikeSupabase(client);
   console.info(`Target looks like: ${isSupabase ? 'a real Supabase project' : 'plain Postgres'}`);
