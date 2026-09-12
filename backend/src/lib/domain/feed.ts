@@ -17,6 +17,8 @@ export interface FeedListing {
   cityId: string;
   categoryId: string;
   categorySlug: string;
+  /** Display name of the category, for card rendering. */
+  categoryName: string | null;
   title: string;
   titleGu: string | null;
   description: string | null;
@@ -34,10 +36,14 @@ export interface FeedListing {
   rankWeight: number;
   venueId: string | null;
   venueName: string | null;
+  venueAddress: string | null;
+  venueArea: string | null;
   venueLat: number | null;
   venueLng: number | null;
   organiserId: string | null;
   organiserName: string | null;
+  /** "18 interested" social proof (PRD F6). Null when not counted. */
+  saveCount: number | null;
   createdAt: Date;
 }
 

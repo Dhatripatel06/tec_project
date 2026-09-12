@@ -30,6 +30,12 @@ export interface CreateSubmissionInput {
   instagram_url?: string | null;
   raw_text?: string | null;
   submitter_phone?: string | null;
+  /**
+   * Verbatim record of what the client sent, when it does not map cleanly onto
+   * the structured columns. The moderation queue renders the submission back
+   * exactly as it arrived from this.
+   */
+  parsed_json?: Json | null;
 }
 
 /**
@@ -158,6 +164,7 @@ export async function createSubmission(
     image_url: input.image_url ?? null,
     instagram_url: input.instagram_url ?? null,
     raw_text: input.raw_text ?? null,
+    parsed_json: input.parsed_json ?? null,
     submitter_phone: input.submitter_phone ?? null,
     submitted_by: submittedBy,
     status: 'PENDING',

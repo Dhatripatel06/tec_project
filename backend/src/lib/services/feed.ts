@@ -2,14 +2,19 @@ import type { Db } from '../supabase/clients';
 import { ApiError, ERROR_CODES } from '../api/response';
 import {
   buildFeed,
+  DEFAULT_FEED_LIMIT,
   EVERGREEN_THRESHOLD,
+  matchesFilters,
+  rotateEvergreen,
+  toEvergreenCandidate,
+  type FeedCandidate,
   type FeedFilters,
   type FeedListing,
   type FeedOccurrence,
   type FeedResult,
 } from '../domain/feed';
 import { localiseListing, type Lang } from '../domain/i18n';
-import type { SortMode } from '../domain/ranking';
+import { rankItems, type SortMode } from '../domain/ranking';
 import type { TimeBand } from '../time/time-bands';
 import { addDays, DEFAULT_TIMEZONE, localToday, weekendDates } from '../time/zoned';
 import type { CityRow } from '../../types/database';
@@ -64,7 +69,15 @@ interface ListingJoin {
   organiser_id: string | null;
   created_at: string;
   category: { slug: string; name: string; name_gu: string | null; emoji: string | null } | null;
-  venue: { id: string; name: string; name_gu: string | null; lat: number | null; lng: number | null; area: string | null } | null;
+  venue: {
+    id: string;
+    name: string;
+    name_gu: string | null;
+    address: string | null;
+    lat: number | null;
+    lng: number | null;
+    area: string | null;
+  } | null;
   organiser: { id: string; name: string } | null;
 }
 
@@ -74,7 +87,7 @@ const LISTING_FIELDS = `
   is_indoor, is_family_friendly, is_evergreen, is_featured, rank_weight,
   status, venue_id, organiser_id, created_at,
   category:categories(slug, name, name_gu, emoji),
-  venue:venues(id, name, name_gu, lat, lng, area),
+  venue:venues(id, name, name_gu, address, lat, lng, area),
   organiser:organisers(id, name)
 `;
 
@@ -84,6 +97,7 @@ function toFeedListing(row: ListingJoin): FeedListing {
     cityId: row.city_id,
     categoryId: row.category_id,
     categorySlug: row.category?.slug ?? '',
+    categoryName: row.category?.name ?? null,
     title: row.title,
     titleGu: row.title_gu,
     description: row.description,
@@ -101,10 +115,13 @@ function toFeedListing(row: ListingJoin): FeedListing {
     rankWeight: row.rank_weight,
     venueId: row.venue?.id ?? row.venue_id,
     venueName: row.venue?.name ?? null,
+    venueAddress: row.venue?.address ?? null,
+    venueArea: row.venue?.area ?? null,
     venueLat: row.venue?.lat ?? null,
     venueLng: row.venue?.lng ?? null,
     organiserId: row.organiser?.id ?? row.organiser_id,
     organiserName: row.organiser?.name ?? null,
+    saveCount: null,
     createdAt: new Date(row.created_at),
   };
 }
@@ -335,4 +352,150 @@ export function resolveDateRange(
   if (range === 'today') return [today];
   if (range === 'tomorrow') return [addDays(today, 1)];
   return weekendDates(today);
+}
+
+// -- Windowed feed ---------------------------------------------------------
+
+export interface FeedWindowRequest {
+  cityRef?: string | null;
+  /** Local dates to include, in order. */
+  dates: string[];
+  now?: Date;
+  sort?: SortMode;
+  filters?: FeedFilters;
+  userLocation?: { lat: number; lng: number } | null;
+  limit?: number;
+}
+
+export interface FeedWindowResult {
+  city: CityRow;
+  today: string;
+  items: FeedCandidate[];
+  meta: {
+    realCount: number;
+    evergreenCount: number;
+    totalCount: number;
+    evergreenFallbackApplied: boolean;
+    dates: string[];
+  };
+}
+
+/**
+ * The feed across several days in one round trip.
+ *
+ * Band assignment and the "already finished" rule stay per-day, because both
+ * depend on which day is being looked at. The evergreen fallback is applied
+ * ONCE across the whole window rather than per day — topping up seven days
+ * separately would repeat the same fillers seven times.
+ */
+export async function getFeedWindow(
+  db: Db,
+  request: FeedWindowRequest,
+): Promise<FeedWindowResult> {
+  const city = await resolveCity(db, request.cityRef);
+  const timezone = city.timezone || DEFAULT_TIMEZONE;
+  const now = request.now ?? new Date();
+  const today = localToday(now, timezone);
+  const dates = request.dates.length > 0 ? request.dates : [today];
+
+  const { data: rows, error } = await db
+    .from('occurrences')
+    .select(
+      `id, listing_id, local_date, start_at, end_at, is_cancelled, listing:listings!inner(${LISTING_FIELDS})`,
+    )
+    .eq('city_id', city.id)
+    .in('local_date', dates)
+    .eq('is_cancelled', false)
+    .eq('listing.status', 'PUBLISHED')
+    .gt('end_at', now.toISOString())
+    .order('start_at', { ascending: true })
+    .limit(500);
+  if (error) throw error;
+
+  const joined = (rows ?? []) as unknown as OccurrenceWithListing[];
+
+  const listings = new Map<string, FeedListing>();
+  const byDate = new Map<string, FeedOccurrence[]>();
+  for (const row of joined) {
+    if (!row.listing) continue;
+    listings.set(row.listing.id, toFeedListing(row.listing));
+    const list = byDate.get(row.local_date) ?? [];
+    list.push({
+      occurrenceId: row.id,
+      listingId: row.listing_id,
+      localDate: row.local_date,
+      startAt: new Date(row.start_at),
+      endAt: new Date(row.end_at),
+      isCancelled: row.is_cancelled,
+    });
+    byDate.set(row.local_date, list);
+  }
+
+  const { data: pick } = await db
+    .from('editor_picks')
+    .select('listing_id')
+    .eq('city_id', city.id)
+    .eq('pick_date', today)
+    .maybeSingle();
+
+  // Per-day assembly, no fallback yet.
+  const scheduled: FeedCandidate[] = [];
+  for (const date of dates) {
+    const dayResult = buildFeed(
+      {
+        date,
+        now,
+        timezone,
+        sort: request.sort ?? 'recommended',
+        filters: request.filters,
+        userLocation: request.userLocation,
+        isToday: date === today,
+        editorsPickListingId: pick?.listing_id ?? null,
+        // Suppress the per-day top-up; it is applied once, below.
+        minRealItems: 0,
+        limit: 500,
+      },
+      listings,
+      byDate.get(date) ?? [],
+      [],
+    );
+    scheduled.push(...dayResult.items);
+  }
+
+  let fillers: FeedCandidate[] = [];
+  if (scheduled.length < EVERGREEN_THRESHOLD) {
+    const { data: evergreenRows, error: evergreenError } = await db
+      .from('listings')
+      .select(LISTING_FIELDS)
+      .eq('city_id', city.id)
+      .eq('status', 'PUBLISHED')
+      .eq('is_evergreen', true)
+      .limit(60);
+    if (evergreenError) throw evergreenError;
+
+    const pool = ((evergreenRows ?? []) as unknown as ListingJoin[])
+      .map((row) => toEvergreenCandidate(toFeedListing(row), { userLocation: request.userLocation }))
+      .filter((candidate) => matchesFilters(candidate, request.filters))
+      .filter((candidate) => !scheduled.some((s) => s.listingId === candidate.listingId));
+
+    fillers = rotateEvergreen(pool, dates[0] ?? today, EVERGREEN_THRESHOLD - scheduled.length);
+  }
+
+  const ranked = rankItems([...scheduled, ...fillers], request.sort ?? 'recommended', { now }).slice(
+    0,
+    request.limit ?? DEFAULT_FEED_LIMIT,
+  );
+
+  return {
+    city,
+    today,
+    items: ranked,
+    meta: {
+      realCount: ranked.filter((i) => i.kind === 'scheduled').length,
+      evergreenCount: ranked.filter((i) => i.kind === 'evergreen').length,
+      totalCount: ranked.length,
+      evergreenFallbackApplied: fillers.length > 0,
+      dates,
+    },
+  };
 }

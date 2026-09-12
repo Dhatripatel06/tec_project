@@ -35,7 +35,7 @@ interface EventItem {
 
 export default function ConsumerHomePage() {
   const [activeTab, setActiveTab] = useState<'today' | 'explore-and-weekend' | 'saved' | 'add-event'>('today');
-  const [selectedCity] = useState('Bhavnagar');
+  const [selectedCity, setSelectedCity] = useState('Bhavnagar');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [savedEventIds, setSavedEventIds] = useState<string[]>(['evt-001', 'evt-004']);
@@ -43,6 +43,52 @@ export default function ConsumerHomePage() {
   // Modals state
   const [activeModalEvent, setActiveModalEvent] = useState<EventItem | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Listing Submission state
+  const [addEventForm, setAddEventForm] = useState({
+    title: '',
+    category: 'culture',
+    venue: '',
+    areaSelect: 'Waghawadi',
+    customArea: '',
+    startTime: '19:30',
+    price: 0,
+    description: '',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBKairyZcRpTMjpTnJERNAbkEOFO31vdoPIyG22ybkw4IDUq-zHGAP3Wo1G9gz6Lijm4aBj6pCzozc9Jnhbhfhwi4Ccedu8Te3-tT9R0wfkQfrW79PaT6SnCVVr_ZIHjPWTigDYz0_rNQ8fxp_Do3LJJh1jJtpcD1Dd5jFn4fXNiJ2YniNBKOT6b7E1ZHkvumoysermLwE3gDWff6tt0mKseCODxwmfzCklXzAQjFtVOKs8PyuCbhBY1Q',
+  });
+
+  const handleAddEventSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const area = addEventForm.areaSelect === '__custom__' && addEventForm.customArea.trim()
+      ? addEventForm.customArea.trim()
+      : addEventForm.areaSelect;
+
+    try {
+      const res = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...addEventForm,
+          area,
+          dateText: `${addEventForm.startTime} Tonight`,
+        }),
+      });
+      if (res.ok) {
+        showToast('📋 Event submitted for curation! Sent to Bhavnagar Moderation Desk.');
+        setActiveTab('today');
+      }
+    } catch {
+      showToast('Submission error. Please check connectivity.');
+    }
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
 
   // Filter state
   const [filters] = useState({
@@ -224,6 +270,35 @@ export default function ConsumerHomePage() {
                 <span className="text-[10px] uppercase text-tertiary font-bold tracking-wider">Aaje Su • {selectedCity}</span>
               </div>
             </button>
+
+            {/* City Selector Dropdown */}
+            <div className="relative group hidden sm:block">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high transition-all border border-surface-container-high/60 text-on-surface shadow-xs cursor-pointer" type="button">
+                <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
+                <span className="font-label-md text-label-md font-bold">{selectedCity}</span>
+                <span className="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-hover:rotate-180">expand_more</span>
+              </button>
+
+              <div className="absolute top-[calc(100%+8px)] left-0 w-52 bg-surface-container-lowest rounded-2xl shadow-[0_16px_36px_-6px_rgba(43,40,37,0.18)] border border-surface-container-high p-2 hidden group-hover:block transition-all z-50">
+                <div className="px-3 py-2 font-label-sm text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 border-b border-surface-container-low mb-1">
+                  Switch City
+                </div>
+                <div className="space-y-0.5">
+                  {['Bhavnagar', 'Rajkot', 'Ahmedabad', 'Surat'].map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => setSelectedCity(city)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-label-md text-sm font-medium transition-colors ${
+                        selectedCity === city ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span>{city}</span>
+                      {selectedCity === city && <span className="material-symbols-outlined text-[18px] text-primary">check</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Search Bar */}
@@ -437,14 +512,110 @@ export default function ConsumerHomePage() {
         )}
 
         {activeTab === 'add-event' && (
-          <div className="max-w-xl mx-auto p-6 rounded-2xl bg-surface-container-lowest border border-surface-container-high shadow-sm space-y-4">
-            <h2 className="text-xl font-bold">Submit a Bhavnagar Listing (આયોજન સબમિટ કરો)</h2>
-            <input type="text" placeholder="Event Title (નાટક / મેળાવડો નું નામ)" className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none" />
-            <input type="text" placeholder="Venue & Area (સ્થળ)" className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none" />
-            <textarea placeholder="Description & Contact details..." className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none" rows={4}></textarea>
-            <button onClick={() => alert('Submission received! Sent to Bhavnagar Moderation Desk.')} className="w-full py-3 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md">
-              Submit for Verification
-            </button>
+          <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-surface-container-lowest border border-surface-container-high shadow-sm space-y-4">
+            <div className="border-b border-surface-container-high pb-3 mb-2">
+              <h2 className="text-xl font-bold">Submit a Bhavnagar Listing (આયોજન સબમિટ કરો)</h2>
+              <p className="text-xs text-on-surface-variant">Post your Natak, Food Popup, Box Cricket, or Garba Night live on Aaje Su?</p>
+            </div>
+
+            <form onSubmit={handleAddEventSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold mb-1">Event Title * (કાર્યક્રમનું નામ)</label>
+                <input
+                  type="text"
+                  required
+                  value={addEventForm.title}
+                  onChange={(e) => setAddEventForm({ ...addEventForm, title: e.target.value })}
+                  placeholder="Event Title (નાટક / મેળાવડો નું નામ)"
+                  className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold mb-1">Category *</label>
+                  <select
+                    value={addEventForm.category}
+                    onChange={(e) => setAddEventForm({ ...addEventForm, category: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none font-medium"
+                  >
+                    <option value="culture">🎭 Culture & Natak</option>
+                    <option value="food">🍜 Food & Popups</option>
+                    <option value="sports">🏏 Sports & Turf</option>
+                    <option value="workshops">🎨 Workshops & Art</option>
+                    <option value="social">🎤 Social & Open Mic</option>
+                    <option value="exhibitions">🛍 Exhibitions</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1">Neighborhood Zone *</label>
+                  <select
+                    value={addEventForm.areaSelect}
+                    onChange={(e) => setAddEventForm({ ...addEventForm, areaSelect: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none font-medium mb-2"
+                  >
+                    <option value="Waghawadi">Waghawadi Road</option>
+                    <option value="Nilambag">Nilambag & Crescent</option>
+                    <option value="Ghogha Circle">Ghogha Circle & Gate</option>
+                    <option value="Kaliyabid">Kaliyabid Campus</option>
+                    <option value="__custom__">➕ Add New Zone (અન્ય વિસ્તાર)...</option>
+                  </select>
+
+                  {addEventForm.areaSelect === '__custom__' && (
+                    <input
+                      type="text"
+                      required
+                      value={addEventForm.customArea}
+                      onChange={(e) => setAddEventForm({ ...addEventForm, customArea: e.target.value })}
+                      placeholder="Type custom neighborhood zone (e.g. Subhashnagar)"
+                      className="w-full p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/30 font-bold focus:outline-none"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold mb-1">Venue Name * (સ્થળ)</label>
+                  <input
+                    type="text"
+                    required
+                    value={addEventForm.venue}
+                    onChange={(e) => setAddEventForm({ ...addEventForm, venue: e.target.value })}
+                    placeholder="Venue Name (સ્થળ)"
+                    className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1">Start Time Picker *</label>
+                  <input
+                    type="time"
+                    required
+                    value={addEventForm.startTime}
+                    onChange={(e) => setAddEventForm({ ...addEventForm, startTime: e.target.value })}
+                    className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">Description & Details *</label>
+                <textarea
+                  required
+                  value={addEventForm.description}
+                  onChange={(e) => setAddEventForm({ ...addEventForm, description: e.target.value })}
+                  placeholder="Description & Contact details..."
+                  className="w-full p-3 rounded-xl bg-surface-container-low text-xs border border-surface-container-high focus:outline-none"
+                  rows={3}
+                />
+              </div>
+
+              <button type="submit" className="w-full py-3.5 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md hover:bg-primary-container transition-all">
+                Submit for Moderation Verification
+              </button>
+            </form>
           </div>
         )}
       </main>
@@ -509,10 +680,20 @@ export default function ConsumerHomePage() {
                 <input key={i} type="text" maxLength={1} defaultValue={d} className="w-full aspect-square text-center font-bold text-primary bg-surface-container-low rounded-xl border border-surface-container-high" />
               ))}
             </div>
-            <button onClick={() => { setIsLoginModalOpen(false); alert('Successfully logged in!'); }} className="w-full py-3 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md">
+            <button onClick={() => { setIsLoginModalOpen(false); showToast('Successfully logged in!'); }} className="w-full py-3 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md">
               Verify & Continue
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[100] bg-slate-900 text-white dark:bg-surface-container-highest dark:text-on-surface px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 border border-slate-700 animate-bounce">
+          <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-semibold">{toastMessage}</span>
         </div>
       )}
     </div>
