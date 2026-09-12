@@ -110,9 +110,13 @@ export function renderHeader() {
             <span>Add Listing</span>
           </button>
 
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm shrink-0">
+          <button 
+            id="header-profile-btn" 
+            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm shrink-0 hover:bg-primary-container transition-colors cursor-pointer"
+            title="Login / Account"
+          >
             <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
-          </div>
+          </button>
         </div>
       </div>
     </header>
@@ -160,5 +164,11 @@ export function bindHeaderEvents(container) {
   const addBtn = container.querySelector('#header-add-btn');
   if (addBtn) {
     addBtn.addEventListener('click', () => store.setActiveTab('add-event'));
+  }
+
+  // Profile / Login button
+  const profileBtn = container.querySelector('#header-profile-btn');
+  if (profileBtn) {
+    profileBtn.addEventListener('click', () => store.setLoginModalOpen(true));
   }
 }

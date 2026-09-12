@@ -9,6 +9,7 @@ import { renderSavedScreen, bindSavedScreenEvents } from './components/SavedScre
 import { renderSubmitListingScreen, bindSubmitListingEvents } from './components/SubmitListingScreen.js';
 import { renderFilterDrawer, bindFilterDrawerEvents } from './components/FilterDrawer.js';
 import { renderEventDetailModal, bindEventDetailModalEvents } from './components/EventDetailModal.js';
+import { renderOtpLoginModal, bindOtpLoginModalEvents } from './components/OtpLoginModal.js';
 
 function renderApp() {
   const appContainer = document.getElementById('app');
@@ -20,6 +21,11 @@ function renderApp() {
     <!-- Header -->
     <div id="header-root">
       ${renderHeader()}
+    </div>
+
+    <!-- OTP Login Modal -->
+    <div id="otp-login-modal-root">
+      ${renderOtpLoginModal()}
     </div>
 
     <!-- Main Viewport Canvas -->
@@ -118,6 +124,7 @@ function renderApp() {
   bindBottomNavigationEvents(appContainer);
   bindFilterDrawerEvents(appContainer);
   bindEventDetailModalEvents(appContainer);
+  bindOtpLoginModalEvents(appContainer);
 
   if (activeTab === 'today') {
     bindInfiniteScrollFeedEvents(appContainer);

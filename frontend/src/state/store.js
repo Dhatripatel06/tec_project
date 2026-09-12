@@ -25,6 +25,8 @@ class StateStore {
 
     // Modal state
     this.activeModalEvent = null;
+    this.loginModalOpen = false;
+    this.userAuthenticated = false;
     
     // Events state
     this.events = [...initialEvents];
@@ -114,6 +116,16 @@ class StateStore {
 
   closeEventModal() {
     this.activeModalEvent = null;
+    this.notify();
+  }
+
+  setLoginModalOpen(open) {
+    this.loginModalOpen = open;
+    this.notify();
+  }
+
+  setUserAuthenticated(authenticated) {
+    this.userAuthenticated = authenticated;
     this.notify();
   }
 
