@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment — never commit real secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+.DS_Store
+coverage/
+.vitest/
+supabase/.temp/
+supabase/.branches/
