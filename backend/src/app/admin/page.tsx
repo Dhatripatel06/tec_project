@@ -284,7 +284,7 @@ export default function AdminDashboardPage() {
           </a>
           <div className="flex items-center gap-2.5 p-2 rounded-xl bg-surface-container-lowest border border-surface-container-high">
             <div className="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-bold text-xs">
-              HJ
+              MK
             </div>
             <div className="flex flex-col flex-1 min-w-0">
               <span className="text-xs font-bold text-on-surface truncate">Mitesh Kukdeja</span>

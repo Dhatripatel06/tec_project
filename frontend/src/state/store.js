@@ -1,6 +1,8 @@
 import { initialEvents, generateMoreEvents } from '../data/mockEvents.js';
 
-const API_BASE = '/api';
+const API_BASE = typeof window !== 'undefined' && window.location.port !== '3000'
+  ? 'http://localhost:3000/api'
+  : '/api';
 
 class StateStore {
   constructor() {

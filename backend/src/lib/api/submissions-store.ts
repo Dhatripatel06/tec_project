@@ -15,25 +15,12 @@ export interface SubmissionRecord {
   createdAt: string;
 }
 
-export const CUSTOM_ZONES: string[] = [
-  'Waghawadi',
-  'Nilambag',
-  'Ghogha Circle',
-  'Kaliyabid',
-  'Crescent',
-  'Subhashnagar',
-];
+const globalForSubmissions = globalThis as unknown as {
+  _pendingSubmissions?: SubmissionRecord[];
+  _customZones?: string[];
+};
 
-export function addZone(zoneName: string) {
-  if (zoneName && typeof zoneName === 'string') {
-    const trimmed = zoneName.trim();
-    if (trimmed && !CUSTOM_ZONES.includes(trimmed)) {
-      CUSTOM_ZONES.push(trimmed);
-    }
-  }
-}
-
-export const PENDING_SUBMISSIONS: SubmissionRecord[] = [
+const INITIAL_SUBMISSIONS: SubmissionRecord[] = [
   {
     id: 'sub-001',
     title: 'Sunset Garba & Raas Jam by Ghogha Shore',
@@ -65,3 +52,29 @@ export const PENDING_SUBMISSIONS: SubmissionRecord[] = [
     createdAt: new Date().toISOString(),
   },
 ];
+
+const INITIAL_ZONES: string[] = [
+  'Waghawadi',
+  'Nilambag',
+  'Ghogha Circle',
+  'Kaliyabid',
+  'Crescent',
+  'Subhashnagar',
+];
+
+export const PENDING_SUBMISSIONS: SubmissionRecord[] =
+  globalForSubmissions._pendingSubmissions ||
+  (globalForSubmissions._pendingSubmissions = INITIAL_SUBMISSIONS);
+
+export const CUSTOM_ZONES: string[] =
+  globalForSubmissions._customZones ||
+  (globalForSubmissions._customZones = INITIAL_ZONES);
+
+export function addZone(zoneName: string) {
+  if (zoneName && typeof zoneName === 'string') {
+    const trimmed = zoneName.trim();
+    if (trimmed && !CUSTOM_ZONES.includes(trimmed)) {
+      CUSTOM_ZONES.push(trimmed);
+    }
+  }
+}

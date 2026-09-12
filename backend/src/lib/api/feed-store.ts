@@ -30,6 +30,10 @@ export interface FeedEventResponseItem {
   };
 }
 
+const globalForFeed = globalThis as unknown as {
+  _liveEvents?: FeedEventResponseItem[];
+};
+
 const SEED_EVENTS: FeedEventResponseItem[] = [
   {
     id: "evt-001",
@@ -168,7 +172,9 @@ const SEED_EVENTS: FeedEventResponseItem[] = [
   }
 ];
 
-export const LIVE_EVENTS: FeedEventResponseItem[] = [...SEED_EVENTS];
+export const LIVE_EVENTS: FeedEventResponseItem[] =
+  globalForFeed._liveEvents ||
+  (globalForFeed._liveEvents = [...SEED_EVENTS]);
 
 export function addLiveEvent(event: FeedEventResponseItem) {
   LIVE_EVENTS.unshift(event);
