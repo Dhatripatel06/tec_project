@@ -6,10 +6,11 @@ dist/
 *.tsbuildinfo
 next-env.d.ts
 
-# Environment — never commit real secrets
-.env
-.env.local
-.env.*.local
+# Environment — never commit real secrets.
+# Broad glob on purpose: it catches .env, .env.local, .env.bak, .env.save and
+# anything else an editor or script drops next to them. Only the template is
+# ever tracked.
+.env*
 !.env.example
 
 .DS_Store

@@ -17,6 +17,14 @@ export interface RequestContext {
   request: Request;
 }
 
+/** Extracts a bearer token from the Authorization header, if present. */
+export function bearerToken(request: Request): string | null {
+  const header = request.headers.get('authorization');
+  if (!header) return null;
+  const match = /^Bearer\s+(.+)$/i.exec(header.trim());
+  return match?.[1]?.trim() || null;
+}
+
 export async function loadActor(db: Db): Promise<Actor> {
   const {
     data: { user },
@@ -42,7 +50,7 @@ export async function loadActor(db: Db): Promise<Actor> {
 }
 
 export async function createContext(request: Request): Promise<RequestContext> {
-  const db = await createRequestClient();
+  const db = await createRequestClient(bearerToken(request));
   const actor = await loadActor(db);
   return { db, actor, request };
 }

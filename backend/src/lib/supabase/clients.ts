@@ -20,8 +20,18 @@ import type { Database } from '../../types/database';
 
 export type Db = SupabaseClient<Database>;
 
-/** Request-scoped client carrying the user's session. RLS enforced. */
-export async function createRequestClient(): Promise<Db> {
+/**
+ * Request-scoped client carrying the user's session. RLS enforced.
+ *
+ * Accepts a session from either transport:
+ *   - `Authorization: Bearer <access_token>` — SPAs, mobile, curl, tests
+ *   - Supabase auth cookies — server-rendered pages
+ *
+ * The bearer token wins when both are present. It is never trusted directly:
+ * it is handed to Supabase, which verifies the signature, and PostgREST applies
+ * RLS from the verified claims.
+ */
+export async function createRequestClient(accessToken?: string | null): Promise<Db> {
   const env = publicEnv();
   const cookieStore = await cookies();
 
@@ -29,6 +39,9 @@ export async function createRequestClient(): Promise<Db> {
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      ...(accessToken
+        ? { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+        : {}),
       cookies: {
         getAll() {
           return cookieStore.getAll();

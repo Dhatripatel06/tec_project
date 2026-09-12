@@ -14,12 +14,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
+    "smoke": "tsx scripts/smoke.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:reset": "tsx scripts/migrate.ts --reset && tsx scripts/seed.ts",
+    "db:reset": "tsx scripts/migrate.ts && tsx scripts/seed.ts -- --reset-demo",
+    "db:verify": "tsx scripts/verify-db.ts",
+    "db:check": "tsx scripts/check-migrations.ts",
+    "user:create": "tsx scripts/create-user.ts",
+    "admin:create": "tsx scripts/create-user.ts",
     "occurrences:generate": "tsx scripts/generate-occurrences.ts",
-    "listings:expire": "tsx scripts/expire-listings.ts",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "listings:expire": "tsx scripts/expire-listings.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -45,5 +49,8 @@
     "typescript": "^5.6.3",
     "vitest": "^2.1.5"
   },
-  "packageManager": "npm@11.4.2"
+  "packageManager": "npm@11.4.2",
+  "engines": {
+    "node": ">=20.9.0"
+  }
 }
