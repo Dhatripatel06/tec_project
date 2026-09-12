@@ -120,14 +120,14 @@ function checkListingCoherence(
       message: 'A paid listing must state price_min',
     });
   }
-  if (value.price_type !== 'paid' && (value.price_min != null || value.price_max != null)) {
+  if (value.price_type !== 'paid' && (value.price_min !== null && value.price_min !== undefined || value.price_max !== null && value.price_max !== undefined)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['price_min'],
       message: 'Only a paid listing may carry a price',
     });
   }
-  if (value.price_min != null && value.price_max != null && value.price_max < value.price_min) {
+  if (value.price_min !== null && value.price_min !== undefined && value.price_max !== null && value.price_max !== undefined && value.price_max < value.price_min) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['price_max'],

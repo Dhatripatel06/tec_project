@@ -68,7 +68,7 @@ export function renderDateTabs() {
 
         <div class="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
           <span class="w-2 h-2 rounded-full bg-green-600"></span>
-          <span>38 Active Happenings Today</span>
+          <span>${store.getFilteredEvents().length} Active Happenings ${store.selectedDate === 'all' ? '' : store.selectedDate === 'tomorrow' ? 'Tomorrow' : store.selectedDate === 'weekend' ? 'This Weekend' : 'Today'}</span>
         </div>
       </div>
     </div>

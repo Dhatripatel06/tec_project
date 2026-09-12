@@ -28,8 +28,8 @@ export interface HandlerOptions {
  * Next 15 passes every route handler a context whose `params` is a Promise,
  * including routes with no dynamic segments (where it resolves to `{}`). The
  * parameter is declared required so the signature satisfies Next's generated
- * `RouteContext` check, but it is read defensively: these handlers are also
- * called directly from tests, with no context at all.
+ * `RouteContext` check, but it is read defensively below: these handlers are
+ * also invoked directly from tests, with no context at all.
  */
 interface RouteArgs<TParams> {
   params: Promise<TParams>;
@@ -64,7 +64,8 @@ export function withApi<TParams extends Record<string, string> = Record<string, 
         }
       }
 
-      const params = args?.params ? await args.params : ({} as TParams);
+      const rawParams = (args as RouteArgs<TParams> | undefined)?.params;
+      const params = rawParams ? await rawParams : ({} as TParams);
       return await handler(ctx, params);
     } catch (error) {
       return toErrorResponse(error);

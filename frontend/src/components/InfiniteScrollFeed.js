@@ -117,6 +117,39 @@ export function renderInfiniteScrollFeed() {
             </section>
           ` : ''}
 
+          <!-- FALLBACK GENERAL GRID FOR MATCHING EVENTS -->
+          ${(nowEvents.length === 0 && eveningEvents.length === 0 && nightEvents.length === 0 && evergreenEvents.length === 0 && events.length > 0) ? `
+            <section class="space-y-space-md">
+              <div class="flex items-center justify-between px-1">
+                <h3 class="font-headline-sm text-headline-sm font-extrabold text-on-surface">Matching Happenings (${events.length})</h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                ${events.map(evt => renderGridCard(evt)).join('')}
+              </div>
+            </section>
+          ` : ''}
+
+          ${events.length === 0 ? `
+            <!-- NO MATCHES EMPTY STATE -->
+            <div class="py-space-xl flex flex-col items-center justify-center text-center space-y-space-md bg-surface-container-lowest rounded-3xl p-space-xl shadow-sm my-space-md">
+              <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[36px]">search_off</span>
+              </div>
+              <div>
+                <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">No Happenings Found</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm mt-1">
+                  No local events matched your search or active filter combination. Try clearing filters or switching date tabs!
+                </p>
+              </div>
+              <button 
+                id="feed-reset-filters-btn" 
+                class="px-space-lg py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-md spring-press"
+              >
+                Reset Filters & Search
+              </button>
+            </div>
+          ` : ''}
+
           <!-- INFINITE SCROLL LOADING SKELETON OR CATCH-UP INDICATOR -->
           ${store.isLoadingMore ? renderLoadingSkeleton() : ''}
 
@@ -167,6 +200,16 @@ export function bindInfiniteScrollFeedEvents(container) {
   const tomorrowBtn = container.querySelector('#explore-tomorrow-btn');
   if (tomorrowBtn) {
     tomorrowBtn.addEventListener('click', () => store.setSelectedDate('tomorrow'));
+  }
+
+  const resetBtn = container.querySelector('#feed-reset-filters-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      store.resetFilters();
+      store.setSelectedDate('today');
+      store.setSelectedCategory('all');
+      store.setSearchQuery('');
+    });
   }
 
   // Infinite Scroll Observer

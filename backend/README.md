@@ -74,6 +74,18 @@ key cannot leak into a client bundle.
 
 ---
 
+## Deploying
+
+The repository is a monorepo: `backend/` and `frontend/` are separate apps and
+the root has no `package.json`. A builder pointed at the repo root cannot build
+anything — set the service **Root Directory to `backend`**.
+
+`railway.json`, `.nvmrc` and `engines.node` are committed so the rest is
+automatic. Full detail, including the environment variables the service needs,
+is in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+---
+
 ## Supabase setup
 
 Full detail, including the safety audit of every migration, is in

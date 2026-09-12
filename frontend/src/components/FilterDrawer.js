@@ -9,12 +9,6 @@ export function renderFilterDrawer() {
       id="filter-drawer" 
       class="fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}"
     >
-      <!-- Backdrop -->
-      <div 
-        id="filter-backdrop" 
-        class="absolute inset-0 bg-on-background/40 backdrop-blur-sm pointer-events-auto cursor-pointer"
-      ></div>
-
       <!-- Drawer Panel -->
       <div class="absolute bottom-0 md:top-0 md:right-0 md:bottom-auto w-full md:w-[460px] h-[85vh] md:h-full bg-surface-container-lowest shadow-2xl flex flex-col pointer-events-auto rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none transform transition-transform duration-300 ease-out z-10 ${
         isOpen ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-x-full'
@@ -143,7 +137,7 @@ export function renderFilterDrawer() {
         <!-- Footer Actions -->
         <div class="p-space-md bg-surface-container-low flex items-center gap-space-md">
           <button id="reset-filters-btn" class="px-space-md py-3 font-label-md text-label-md text-on-surface-variant hover:text-on-surface">Clear All</button>
-          <button id="apply-filters-btn" class="flex-1 py-3 px-space-md bg-primary hover:bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg font-bold transition-all shadow-md">Show 38 Happenings</button>
+          <button id="apply-filters-btn" class="flex-1 py-3 px-space-md bg-primary hover:bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg font-bold transition-all shadow-md">Show ${store.getFilteredEvents().length} Happenings</button>
         </div>
       </div>
     </div>
